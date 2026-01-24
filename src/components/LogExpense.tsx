@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LogExpense.css';
 import NeoButton from './NeoButton';
+import WarningScreen from './WarningScreen';
 import { addExpense, getBudgetOverview, getCurrentWeekIndex } from '../apis';
 
 interface Category {
@@ -18,6 +19,7 @@ const LogExpense: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [weekBalance, setWeekBalance] = useState(0);
     const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+    const [showWarning, setShowWarning] = useState(false);
 
     const categories: Category[] = [
         { id: 'food', icon: '🍔', label: 'Food' },
@@ -53,12 +55,24 @@ const LogExpense: React.FC = () => {
         try {
             setLoading(true);
             await addExpense(amountNum, selectedCategory, currentWeekIndex);
-            navigate('/dashboard');
+
+            // Check if we should show warning after adding expense
+            const overview = await getBudgetOverview();
+            if (overview.suggestFreeze) {
+                setShowWarning(true);
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             alert(err instanceof Error ? err.message : 'Failed to add expense');
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleWarningClose = () => {
+        setShowWarning(false);
+        navigate('/dashboard');
     };
 
     return (
@@ -119,11 +133,11 @@ const LogExpense: React.FC = () => {
 
                 {/* Smart Feedback */}
                 {amount && (
-                    <div className="log-expense__feedback" style={{ 
+                    <div className="log-expense__feedback" style={{
                         backgroundColor: remainingBalance < 0 ? '#fee2e2' : '#fff',
                         borderColor: remainingBalance < 0 ? '#f87171' : '#000'
                     }}>
-                        {remainingBalance >= 0 
+                        {remainingBalance >= 0
                             ? `This leaves ₹${remainingBalance} for the week.`
                             : `⚠️ This exceeds your weekly balance by ₹${Math.abs(remainingBalance)}!`
                         }
@@ -132,9 +146,9 @@ const LogExpense: React.FC = () => {
 
                 {/* CTA Button */}
                 <div className="log-expense__button-wrapper">
-                    <NeoButton 
-                        variant="primary" 
-                        size="large" 
+                    <NeoButton
+                        variant="primary"
+                        size="large"
                         onClick={handleAddExpense}
                         disabled={loading}
                     >
@@ -142,6 +156,9 @@ const LogExpense: React.FC = () => {
                     </NeoButton>
                 </div>
             </div>
+
+            {/* Warning Modal */}
+            <WarningScreen isOpen={showWarning} onClose={handleWarningClose} />
         </div>
     );
 };

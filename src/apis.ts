@@ -118,7 +118,7 @@ export async function addExpense(amount: number, category: string, weekIndex: nu
 export function getCurrentWeekIndex(): number {
     const now = new Date();
     const dayOfMonth = now.getDate();
-    
+
     if (dayOfMonth <= 7) return 0;
     if (dayOfMonth <= 14) return 1;
     if (dayOfMonth <= 21) return 2;
@@ -127,11 +127,11 @@ export function getCurrentWeekIndex(): number {
 export function getDaysRemainingInWeek(): number {
     const now = new Date();
     const dayOfMonth = now.getDate();
-    
+
     if (dayOfMonth <= 7) return 7 - dayOfMonth + 1;
     if (dayOfMonth <= 14) return 14 - dayOfMonth + 1;
     if (dayOfMonth <= 21) return 21 - dayOfMonth + 1;
-    
+
     // Last week - days until end of month
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     return lastDay - dayOfMonth + 1;
@@ -145,8 +145,41 @@ export function formatCurrency(amount: number): string {
 export function getSpendingStatus(spent: number, allocated: number): 'safe' | 'warning' | 'danger' {
     if (allocated === 0) return 'safe';
     const percentage = (spent / allocated) * 100;
-    
+
     if (percentage >= 100) return 'danger';
     if (percentage >= 75) return 'warning';
     return 'safe';
+}
+
+export async function updateBudgetAllowance(newAllowance: number): Promise<Budget> {
+    const response = await fetch(`${API_BASE_URL}/budget/update-allowance`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ allowance: newAllowance }),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update budget allowance');
+    }
+
+    return response.json();
+}
+
+export async function resetMonthData(): Promise<Budget> {
+    const response = await fetch(`${API_BASE_URL}/budget/reset`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reset month data');
+    }
+
+    return response.json();
 }

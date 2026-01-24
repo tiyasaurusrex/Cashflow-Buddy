@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './WarningScreen.css';
 import { getBudgetOverview } from '../apis';
 import type { OverviewResponse } from '../apis';
 
-const WarningScreen: React.FC = () => {
-    const navigate = useNavigate();
+interface WarningScreenProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const WarningScreen: React.FC<WarningScreenProps> = ({ isOpen, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [progressWidth, setProgressWidth] = useState(100);
-    
+
     // State from backend
     const [dailyRemaining, setDailyRemaining] = useState(0);
     const [daysLeft, setDaysLeft] = useState(0);
@@ -26,18 +29,18 @@ const WarningScreen: React.FC = () => {
         try {
             setLoading(true);
             const data: OverviewResponse = await getBudgetOverview();
-            
+
             setDailyRemaining(Math.round(data.burnRate.safeDailySpend));
             setDaysLeft(data.burnRate.daysRemaining);
             setBudgetRemaining(data.burnRate.remainingMoney);
             setTotalBudget(data.budget.allowance);
             setDailyAvg(data.prediction?.dailyAvg || 0);
             setSuggestFreeze(data.suggestFreeze);
-            
+
             // Calculate progress percentage
             const percentage = (data.burnRate.remainingMoney / data.budget.allowance) * 100;
             setProgressWidth(Math.max(0, Math.min(100, percentage)));
-            
+
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load budget data');
@@ -68,19 +71,23 @@ const WarningScreen: React.FC = () => {
 
     const handleFreeze = () => {
         console.log('Budget frozen');
-        navigate('/dashboard');
+        onClose();
     };
 
     const handleIgnore = () => {
         console.log('Warning ignored');
-        navigate('/dashboard');
+        onClose();
     };
+
+    if (!isOpen) return null;
 
     if (loading) {
         return (
-            <div className="warning-screen">
-                <div className="warning-container">
-                    <div className="loading">Loading budget data...</div>
+            <div className="warning-modal-overlay">
+                <div className="warning-screen">
+                    <div className="warning-container">
+                        <div className="loading">Loading budget data...</div>
+                    </div>
                 </div>
             </div>
         );
@@ -88,13 +95,15 @@ const WarningScreen: React.FC = () => {
 
     if (error) {
         return (
-            <div className="warning-screen">
-                <div className="warning-container">
-                    <div className="error-message">
-                        <p>⚠️ {error}</p>
-                        <button onClick={() => navigate('/dashboard')} className="neo-button">
-                            Back to Dashboard
-                        </button>
+            <div className="warning-modal-overlay">
+                <div className="warning-screen">
+                    <div className="warning-container">
+                        <div className="error-message">
+                            <p>⚠️ {error}</p>
+                            <button onClick={onClose} className="neo-button">
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -102,59 +111,64 @@ const WarningScreen: React.FC = () => {
     }
 
     return (
-        <div className="warning-screen">
-            <div className="warning-container">
-                <span className="warning-icon">⚠️</span>
+        <div className="warning-modal-overlay" onClick={onClose}>
+            <div className="warning-screen" onClick={(e) => e.stopPropagation()}>
+                <button className="warning-close-btn" onClick={onClose} aria-label="Close">
+                    ✕
+                </button>
+                <div className="warning-container">
+                    <span className="warning-icon">⚠️</span>
 
-                {/* Headline */}
-                <h1 className="warning-headline">
-                    ₹{dailyRemaining}/day
-                </h1>
-                <p className="warning-subtext">Remaining</p>
+                    {/* Headline */}
+                    <h1 className="warning-headline">
+                        ₹{dailyRemaining}/day
+                    </h1>
+                    <p className="warning-subtext">Remaining</p>
 
-                {/* Explanation */}
-                <div className="warning-explanation">
-                    <p className="warning-explanation-text">
-                        {getWarningMessage()}
-                    </p>
-                </div>
-
-                {/* Visual Indicators */}
-                <div className="warning-visual">
-                    {/* Countdown */}
-                    <div className="countdown-section">
-                        <div className="countdown-label">Days Until Month-End</div>
-                        <div className="countdown-value">{daysLeft}</div>
+                    {/* Explanation */}
+                    <div className="warning-explanation">
+                        <p className="warning-explanation-text">
+                            {getWarningMessage()}
+                        </p>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="progress-bar-container">
-                        <div
-                            className="progress-bar-fill animated"
-                            style={{
-                                '--progress-width': `${progressWidth}%`,
-                                width: `${progressWidth}%`
-                            } as React.CSSProperties}
-                        >
-                            {progressWidth > 20 && `${Math.round(progressWidth)}%`}
+                    {/* Visual Indicators */}
+                    <div className="warning-visual">
+                        {/* Countdown */}
+                        <div className="countdown-section">
+                            <div className="countdown-label">Days Until Month-End</div>
+                            <div className="countdown-value">{daysLeft}</div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="progress-bar-container">
+                            <div
+                                className="progress-bar-fill animated"
+                                style={{
+                                    '--progress-width': `${progressWidth}%`,
+                                    width: `${progressWidth}%`
+                                } as React.CSSProperties}
+                            >
+                                {progressWidth > 20 && `${Math.round(progressWidth)}%`}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Soft Controls */}
-                <div className="warning-controls">
-                    <button
-                        className="warning-btn warning-btn-primary"
-                        onClick={handleFreeze}
-                    >
-                        🔒 Freeze Spending for 24h
-                    </button>
-                    <button
-                        className="warning-btn warning-btn-secondary"
-                        onClick={handleIgnore}
-                    >
-                        I'll Be Careful
-                    </button>
+                    {/* Soft Controls */}
+                    <div className="warning-controls">
+                        <button
+                            className="warning-btn warning-btn-primary"
+                            onClick={handleFreeze}
+                        >
+                            🔒 Freeze Spending for 24h
+                        </button>
+                        <button
+                            className="warning-btn warning-btn-secondary"
+                            onClick={handleIgnore}
+                        >
+                            I'll Be Careful
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

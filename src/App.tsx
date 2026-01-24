@@ -6,7 +6,7 @@ import OnboardingPage from './components/OnboardingPage'
 import Dashboard from './components/Dashboard'
 import MonthlyOverview from './components/MonthlyOverview'
 import LogExpense from './components/LogExpense'
-import WarningScreen from './components/WarningScreen'
+import Settings from './components/Settings'
 import WeeklySplit from './components/WeeklySplit'
 
 function AppContent() {
@@ -17,7 +17,7 @@ function AppContent() {
     { label: 'Log Expense', href: '/log-expense' },
     { label: 'Weekly Split', href: '/weekly-split' },
     { label: 'Monthly Overview', href: '/monthly-overview' },
-    { label: 'Warning', href: '/warning' },
+    { label: 'Settings', href: '/settings' },
   ];
 
   const handleNavClick = (item: { label: string; href: string }) => {
@@ -32,7 +32,7 @@ function AppContent() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/log-expense" element={<LogExpense />} />
         <Route path="/monthly-overview" element={<MonthlyOverview />} />
-        <Route path="/warning" element={<WarningScreen />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/weekly-split" element={<WeeklySplit />} />
       </Routes>
     </NeoBackground>
