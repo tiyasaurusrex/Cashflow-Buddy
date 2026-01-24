@@ -1,45 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './WarningScreen.css';
+import { getBudgetOverview } from '../apis';
+import type { OverviewResponse } from '../apis';
 
-interface WarningScreenProps {
-    dailyRemaining?: number;
-    daysLeft?: number;
-    budgetRemaining?: number;
-    totalBudget?: number;
-    triggerType?: 'overspending' | 'low-balance' | 'heavy-days';
-}
-
-const WarningScreen: React.FC<WarningScreenProps> = ({
-    dailyRemaining = 90,
-    daysLeft = 15,
-    budgetRemaining = 1350,
-    totalBudget = 3000,
-    triggerType = 'low-balance'
-}) => {
+const WarningScreen: React.FC = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [progressWidth, setProgressWidth] = useState(100);
+    
+    // State from backend
+    const [dailyRemaining, setDailyRemaining] = useState(0);
+    const [daysLeft, setDaysLeft] = useState(0);
+    const [budgetRemaining, setBudgetRemaining] = useState(0);
+    const [totalBudget, setTotalBudget] = useState(0);
+    const [dailyAvg, setDailyAvg] = useState(0);
+    const [suggestFreeze, setSuggestFreeze] = useState(false);
 
     useEffect(() => {
-        // Calculate progress percentage
-        const percentage = (budgetRemaining / totalBudget) * 100;
-        setProgressWidth(percentage);
-    }, [budgetRemaining, totalBudget]);
+        fetchWarningData();
+    }, []);
 
-    const handleFreeze = () => {
-        // In a real app, this would trigger a freeze action
-        console.log('Spending frozen for 24 hours');
-        alert('Spending frozen for 24 hours! 🔒');
-        navigate('/dashboard');
+    const fetchWarningData = async () => {
+        try {
+            setLoading(true);
+            const data: OverviewResponse = await getBudgetOverview();
+            
+            setDailyRemaining(Math.round(data.burnRate.safeDailySpend));
+            setDaysLeft(data.burnRate.daysRemaining);
+            setBudgetRemaining(data.burnRate.remainingMoney);
+            setTotalBudget(data.budget.allowance);
+            setDailyAvg(data.prediction?.dailyAvg || 0);
+            setSuggestFreeze(data.suggestFreeze);
+            
+            // Calculate progress percentage
+            const percentage = (data.burnRate.remainingMoney / data.budget.allowance) * 100;
+            setProgressWidth(Math.max(0, Math.min(100, percentage)));
+            
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load budget data');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleIgnore = () => {
-        // Navigate back without shame
-        navigate('/dashboard');
+    const getTriggerType = (): 'overspending' | 'low-balance' | 'heavy-days' => {
+        if (suggestFreeze) return 'heavy-days';
+        if (progressWidth < 30) return 'low-balance';
+        if (dailyAvg > dailyRemaining) return 'overspending';
+        return 'low-balance';
     };
 
     const getWarningMessage = () => {
-        switch (triggerType) {
+        const currentTriggerType = getTriggerType();
+        switch (currentTriggerType) {
             case 'overspending':
                 return 'Your spending rate is above budget. Slow down to avoid running out!';
             case 'heavy-days':
@@ -49,6 +65,41 @@ const WarningScreen: React.FC<WarningScreenProps> = ({
                 return 'To last till month-end.';
         }
     };
+
+    const handleFreeze = () => {
+        console.log('Budget frozen');
+        navigate('/dashboard');
+    };
+
+    const handleIgnore = () => {
+        console.log('Warning ignored');
+        navigate('/dashboard');
+    };
+
+    if (loading) {
+        return (
+            <div className="warning-screen">
+                <div className="warning-container">
+                    <div className="loading">Loading budget data...</div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="warning-screen">
+                <div className="warning-container">
+                    <div className="error-message">
+                        <p>⚠️ {error}</p>
+                        <button onClick={() => navigate('/dashboard')} className="neo-button">
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="warning-screen">

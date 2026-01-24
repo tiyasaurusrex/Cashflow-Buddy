@@ -19,12 +19,19 @@ const WeeklySplit: React.FC = () => {
     // Get allowance from location state or use default
     const monthlyAllowance = location.state?.allowance ? parseFloat(location.state.allowance) : 4000;
 
-    const [weeks, setWeeks] = useState<WeekData[]>([
-        { week: 1, dateRange: '1-7 Jan', amount: '' },
-        { week: 2, dateRange: '8-14 Jan', amount: '' },
-        { week: 3, dateRange: '15-21 Jan', amount: '' },
-        { week: 4, dateRange: '22-31 Jan', amount: '' },
-    ]);
+    // Generate dynamic date ranges based on current month
+    const generateWeekDateRanges = () => {
+        const now = new Date();
+        const monthName = now.toLocaleDateString('en-US', { month: 'short' });
+        return [
+            { week: 1, dateRange: `1-7 ${monthName}`, amount: '' },
+            { week: 2, dateRange: `8-14 ${monthName}`, amount: '' },
+            { week: 3, dateRange: `15-21 ${monthName}`, amount: '' },
+            { week: 4, dateRange: `22-31 ${monthName}`, amount: '' },
+        ];
+    };
+
+    const [weeks, setWeeks] = useState<WeekData[]>(generateWeekDateRanges());
 
     const [totalAssigned, setTotalAssigned] = useState(0);
     const [remaining, setRemaining] = useState(monthlyAllowance);
@@ -71,17 +78,26 @@ const WeeklySplit: React.FC = () => {
     };
 
     const handleReset = () => {
-        setWeeks(weeks.map(week => ({ ...week, amount: '' })));
+        setWeeks(generateWeekDateRanges());
+        setError(null);
     };
 
     const handleSave = async () => {
+        if (!canSave) {
+            setError('Please allocate the full budget amount before saving.');
+            return;
+        }
+
         try {
             setLoading(true);
             setError(null);
             const weeklyAllocations = weeks.map(week => parseFloat(week.amount) || 0);
-            await initBudget(monthlyAllowance, weeklyAllocations);
+            console.log('Saving budget:', { monthlyAllowance, weeklyAllocations });
+            const result = await initBudget(monthlyAllowance, weeklyAllocations);
+            console.log('Budget saved successfully:', result);
             navigate('/dashboard');
         } catch (err) {
+            console.error('Error saving budget:', err);
             setError(err instanceof Error ? err.message : 'Failed to save budget');
         } finally {
             setLoading(false);
