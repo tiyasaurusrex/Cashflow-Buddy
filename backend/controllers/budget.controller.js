@@ -38,3 +38,33 @@ exports.overview = (req, res) => {
     suggestFreeze: shouldSuggestFreeze(budget.expenses)
   });
 };
+
+// -------- RESET / UPDATE ALLOWANCE --------
+exports.resetAllowance = (req, res) => {
+  try {
+    const { newAllowance, currentWeekIndex } = req.body;
+
+    if (newAllowance == null || currentWeekIndex == null) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const budget = budgetRepository.getBudget();
+
+    if (!budget) {
+      return res.status(404).json({ error: "No budget found" });
+    }
+
+    const updatedBudget = budgetService.resetAllowance(
+      budget,
+      Number(newAllowance),
+      Number(currentWeekIndex)
+    );
+
+    budgetRepository.saveBudget(updatedBudget);
+
+    res.json(updatedBudget);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+

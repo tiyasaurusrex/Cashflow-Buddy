@@ -4,5 +4,5 @@ const controller = require("../controllers/budget.controller");
 
 router.post("/init", controller.init);
 router.get("/overview", controller.overview);
-
+router.post("/reset", controller.resetAllowance);
 module.exports = router;
