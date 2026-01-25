@@ -180,7 +180,7 @@ const MonthlyOverview: React.FC = () => {
                         <span>Insight</span>
                     </div>
                     <p className="insight-text">
-                        "{insightMessage}"
+                        {insightMessage}
                     </p>
                 </section>
 
