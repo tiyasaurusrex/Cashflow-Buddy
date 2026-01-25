@@ -1,12 +1,14 @@
 /* WeeklySplit Styles - Neobrutalism Theme */
 .weekly-split {
     min-height: 100vh;
-    padding: 2rem 1rem;
+    padding: 2rem 1rem 4rem 1rem;
+    box-sizing: border-box;
 }
 
 .weekly-split__container {
     max-width: 700px;
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
 /* Header Section */
@@ -25,7 +27,7 @@
 }
 
 .weekly-split__title {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 700;
     color: #000;
     margin: 0 0 0.5rem 0;
@@ -125,7 +127,7 @@
 
 .weekly-split__week-card {
     background-color: #fff;
-    border: 3px solid #000;
+    border: 2px solid #000;
     border-radius: 8px;
     padding: 1rem 1.25rem;
     box-shadow: 4px 4px 0px 0px #000;
@@ -373,11 +375,11 @@
 /* Responsive Design */
 @media (max-width: 640px) {
     .weekly-split {
-        padding: 1rem 0.75rem;
+        padding: 1.5rem 0.75rem 3rem 0.75rem;
     }
 
     .weekly-split__title {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
     }
 
     .weekly-split__header {

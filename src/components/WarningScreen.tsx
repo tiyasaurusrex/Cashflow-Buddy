@@ -113,10 +113,10 @@ const WarningScreen: React.FC<WarningScreenProps> = ({ isOpen, onClose }) => {
     return (
         <div className="warning-modal-overlay" onClick={onClose}>
             <div className="warning-screen" onClick={(e) => e.stopPropagation()}>
-                <button className="warning-close-btn" onClick={onClose} aria-label="Close">
-                    ✕
-                </button>
                 <div className="warning-container">
+                    <button className="warning-close-btn" onClick={onClose} aria-label="Close">
+                        ✕
+                    </button>
                     <span className="warning-icon">⚠️</span>
 
                     {/* Headline */}
