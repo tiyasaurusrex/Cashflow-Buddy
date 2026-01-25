@@ -70,9 +70,57 @@ function applyExpenseToWeeklyBudget(budget, amount, weekIndex) {
   return budget;
 }
 
+// -------- RESET / UPDATE ALLOWANCE --------
+function resetAllowance(budget, newAllowance, currentWeekIndex) {
+  if (!newAllowance || newAllowance <= 0) {
+    throw new Error("Invalid allowance");
+  }
 
-// -------- EXPORTS (THIS IS THE KEY FIX) --------
+  const weeks = budget.weeks;
+
+  if (!weeks[currentWeekIndex]) {
+    throw new Error("Invalid week index");
+  }
+
+  const totalSpent = weeks.reduce(
+    (sum, week) => sum + week.spent,
+    0
+  );
+
+  budget.allowance = newAllowance;
+
+  let remainingMoney = newAllowance - totalSpent;
+
+  if (remainingMoney < 0) {
+    budget.isOverdrawn = true;
+    remainingMoney = 0;
+  }
+
+  const remainingWeeks = weeks.length - currentWeekIndex;
+
+  if (remainingWeeks <= 0) {
+    throw new Error("No weeks left to redistribute allowance");
+  }
+
+  const perWeekAllocation = Math.floor(
+    remainingMoney / remainingWeeks
+  );
+
+  for (let i = currentWeekIndex; i < weeks.length; i++) {
+    const week = weeks[i];
+
+    week.allocated = perWeekAllocation;
+    week.balance = Math.max(
+      perWeekAllocation - week.spent,
+      0
+    );
+  }
+
+  return budget;
+}
+
 module.exports = {
   initBudget,
-  applyExpenseToWeeklyBudget
+  applyExpenseToWeeklyBudget,
+  resetAllowance
 };
