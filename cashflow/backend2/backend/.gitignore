@@ -1,0 +1,50 @@
+# ========================
+# Node / Backend
+# ========================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+.env
+.env.local
+.env.*.local
+
+# Mongo / Database
+data/
+dump/
+
+# ========================
+# React / Frontend
+# ========================
+node_modules/
+dist/
+build/
+.vite/
+.cache/
+
+# ========================
+# IDE & OS junk
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# ========================
+# Logs
+# ========================
+logs/
+*.log
+
+# ========================
+# Coverage & Testing
+# ========================
+coverage/
+
+# ========================
+# Temp files
+# ========================
+*.tmp
+*.temp
