@@ -1,5 +1,4 @@
 
-````md
 # Node.js + Express
 
 This template provides a minimal setup to run an Express server with Node.js
@@ -31,7 +30,7 @@ Note: Since no database is used, data does not persist between server restarts.
 
 ## Project Structure
 
-```text
+```bash
 backend/
 ├── routes/
 │   ├── budget.routes.js
