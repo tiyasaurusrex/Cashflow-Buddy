@@ -1,0 +1,75 @@
+
+.auth {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: transparent;
+}
+
+.auth__container {
+    width: 100%;
+    max-width: 440px;
+}
+.auth__header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth__title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -1px;
+    color: #111;
+    margin: 0 0 0.4rem;
+    text-transform: uppercase;
+}
+
+.auth__tagline {
+    font-size: 0.95rem;
+    color: #444;
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+}
+.auth__card {
+    background: #fff;
+    border: 3px solid #111;
+    box-shadow: 6px 6px 0 #111;
+    padding: 2.5rem 2rem;
+    text-align: center;
+}
+
+.auth__card-heading {
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-family: 'Space Grotesk', sans-serif;
+    color: #111;
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth__card-subtext {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 0 0 1.75rem;
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.5;
+}
+.auth__error {
+    padding: 0.75rem 1rem;
+    background: #fee2e2;
+    border: 2px solid #ef4444;
+    color: #991b1b;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-bottom: 1.25rem;
+}
+.auth__google-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
