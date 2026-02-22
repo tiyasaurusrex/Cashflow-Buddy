@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './OnboardingPage.css';
 import NeoButton from './NeoButton';
-import { initBudget } from '../apis';
+import { initBudget, getBudgetOverview } from '../apis';
 
 const OnboardingPage: React.FC = () => {
     const navigate = useNavigate();
     const [allowance, setAllowance] = useState('');
     const [customizeWeeks, setCustomizeWeeks] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // If the user already has a budget, go straight to the dashboard
+    useEffect(() => {
+        const checkExistingBudget = async () => {
+            try {
+                await getBudgetOverview();
+                navigate('/dashboard', { replace: true });
+            } catch {
+                // 404 = no budget yet — show onboarding form
+                setLoading(false);
+            }
+        };
+        checkExistingBudget();
+    }, [navigate]);
 
     const handleStartBudgeting = async () => {
         if (!allowance) {
@@ -24,10 +38,8 @@ const OnboardingPage: React.FC = () => {
         }
 
         if (customizeWeeks) {
-            // Navigate to weekly split page without initializing budget yet
             navigate('/weekly-split', { state: { allowance: allowanceNum } });
         } else {
-            // Initialize budget with equal weekly splits
             try {
                 setLoading(true);
                 setError(null);
@@ -40,6 +52,17 @@ const OnboardingPage: React.FC = () => {
             }
         }
     };
+
+    // Still checking for existing budget
+    if (loading) {
+        return (
+            <div className="onboarding">
+                <div className="onboarding__container">
+                    <p style={{ textAlign: 'center', padding: '2rem', fontFamily: 'Space Grotesk, sans-serif', color: '#111' }}>Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="onboarding">

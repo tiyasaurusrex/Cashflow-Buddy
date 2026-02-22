@@ -1,5 +1,5 @@
 // -------- INIT BUDGET --------
-function initBudget(allowance, weeklyAllocations) {
+function initBudget(allowance, weeklyAllocations, monthStartDate = 1) {
   if (!allowance || allowance <= 0) {
     throw new Error("Invalid allowance");
   }
@@ -15,6 +15,7 @@ function initBudget(allowance, weeklyAllocations) {
 
   return {
     allowance,
+    monthStartDate,
     weeks,
     expenses: [],
     categoryTotals: {
@@ -119,8 +120,19 @@ function resetAllowance(budget, newAllowance, currentWeekIndex) {
   return budget;
 }
 
+// -------- UPDATE MONTH START DATE --------
+function updateMonthStartDate(budget, newMonthStartDate) {
+  if (!newMonthStartDate || newMonthStartDate < 1 || newMonthStartDate > 28) {
+    throw new Error("Invalid month start date. Must be between 1 and 28.");
+  }
+
+  budget.monthStartDate = newMonthStartDate;
+  return budget;
+}
+
 module.exports = {
   initBudget,
   applyExpenseToWeeklyBudget,
-  resetAllowance
+  resetAllowance,
+  updateMonthStartDate
 };
