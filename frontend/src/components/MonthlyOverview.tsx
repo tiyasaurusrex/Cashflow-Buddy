@@ -46,16 +46,17 @@ const MonthlyOverview: React.FC = () => {
                 allocated: week.allocated,
             }));
             setWeeklySpends(weeksData);
-            
-            // Map expenses to transactions
-            const txns: Transaction[] = data.budget.expenses.map((expense: Expense, index: number) => ({
-                id: `exp-${index}`,
-                amount: expense.amount,
-                category: expense.category.charAt(0).toUpperCase() + expense.category.slice(1),
-                categoryIcon: getCategoryIcon(expense.category),
-                date: expense.date ? new Date(expense.date).toLocaleDateString() : 'Recent',
-                note: undefined,
-            }));
+         
+            const txns: Transaction[] = [...data.budget.expenses]
+                .reverse()
+                .map((expense: Expense, index: number) => ({
+                    id: `exp-${index}`,
+                    amount: expense.amount,
+                    category: expense.category.charAt(0).toUpperCase() + expense.category.slice(1),
+                    categoryIcon: getCategoryIcon(expense.category),
+                    date: expense.date ? new Date(expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent',
+                    note: expense.note || undefined,
+                }));
             setTransactions(txns);
             
             setError(null);
@@ -66,7 +67,6 @@ const MonthlyOverview: React.FC = () => {
         }
     };
 
-    // Group transactions by date
     const groupedTransactions = transactions.reduce((groups, transaction) => {
         const date = transaction.date;
         if (!groups[date]) {
@@ -81,9 +81,9 @@ const MonthlyOverview: React.FC = () => {
     const saved = allowance - totalSpent;
 
     const getStatusColor = (spent: number, allocated: number) => {
-        if (spent > allocated) return '#FF006E'; // Vibrant Pink/Red
-        if (spent > allocated * 0.9) return '#FFD60A'; // Vibrant Yellow
-        return '#00D9FF'; // Vibrant Cyan
+        if (spent > allocated) return '#FF006E'; 
+        if (spent > allocated * 0.9) return '#FFD60A'; 
+        return '#00D9FF'; 
     };
 
     // Insight Logic
@@ -176,7 +176,7 @@ const MonthlyOverview: React.FC = () => {
                 {/* Insight Section */}
                 <section className="monthly-insight">
                     <div className="insight-header">
-                        <span className="insight-icon">💡</span>
+                        <span className="insight-icon"></span>
                         <span>Insight</span>
                     </div>
                     <p className="insight-text">

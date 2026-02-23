@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Settings.css';
 import ConfirmModal from './ConfirmModal';
-import { getBudgetOverview, updateBudgetAllowance, resetMonthData } from '../apis';
+import { getBudgetOverview, updateBudgetAllowance, resetMonthData, updateMonthStartDate } from '../apis';
 import type { OverviewResponse } from '../apis';
 
 const Settings: React.FC = () => {
@@ -13,6 +13,8 @@ const Settings: React.FC = () => {
     const [monthStartDate, setMonthStartDate] = useState(1);
     const [showResetModal, setShowResetModal] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [successMsg, setSuccessMsg] = useState<string | null>(null);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     useEffect(() => {
         fetchBudgetData();
@@ -24,6 +26,7 @@ const Settings: React.FC = () => {
             const data: OverviewResponse = await getBudgetOverview();
             setCurrentAllowance(data.budget.allowance);
             setNewAllowance(data.budget.allowance.toString());
+            setMonthStartDate(data.budget.monthStartDate || 1);
         } catch (err) {
             console.error('Failed to fetch budget data:', err);
         } finally {
@@ -35,22 +38,39 @@ const Settings: React.FC = () => {
         const allowanceValue = parseFloat(newAllowance);
 
         if (!allowanceValue || allowanceValue <= 0) {
-            alert('Please enter a valid allowance amount');
+            setErrorMsg('Please enter a valid allowance amount');
             return;
         }
 
         if (allowanceValue === currentAllowance) {
-            alert('New allowance is the same as current allowance');
+            setErrorMsg('New allowance is the same as current allowance');
             return;
         }
 
         try {
             setSaving(true);
+            setErrorMsg(null);
+            setSuccessMsg(null);
             await updateBudgetAllowance(allowanceValue);
-            setCurrentAllowance(allowanceValue);
-            alert('✅ Budget allowance updated successfully!');
+            // Navigate to weekly-split so the user can re-distribute the new allowance
+            navigate('/weekly-split', { state: { allowance: allowanceValue } });
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to update allowance');
+            setErrorMsg(err instanceof Error ? err.message : 'Failed to update allowance');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleUpdateMonthStartDate = async (newDate: number) => {
+        try {
+            setSaving(true);
+            setErrorMsg(null);
+            setSuccessMsg(null);
+            await updateMonthStartDate(newDate);
+            setMonthStartDate(newDate);
+            setSuccessMsg('Month start date updated successfully!');
+        } catch (err) {
+            setErrorMsg(err instanceof Error ? err.message : 'Failed to update month start date');
         } finally {
             setSaving(false);
         }
@@ -60,10 +80,10 @@ const Settings: React.FC = () => {
         try {
             setSaving(true);
             await resetMonthData();
-            alert('✅ Month data has been reset!');
-            navigate('/dashboard');
+            // Budget is deleted — send user to onboarding to set up fresh
+            navigate('/', { replace: true });
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to reset month data');
+            setErrorMsg(err instanceof Error ? err.message : 'Failed to reset month data');
             setSaving(false);
         }
     };
@@ -81,7 +101,15 @@ const Settings: React.FC = () => {
     return (
         <div className="settings">
             <div className="settings__container">
-                <h1 className="settings__title">⚙️ Settings</h1>
+                <h1 className="settings__title"> Settings</h1>
+
+                {/* Inline feedback messages */}
+                {successMsg && (
+                    <div className="settings__feedback settings__feedback--success">{successMsg}</div>
+                )}
+                {errorMsg && (
+                    <div className="settings__feedback settings__feedback--error">{errorMsg}</div>
+                )}
 
                 {/* Budget Settings Section */}
                 <div className="settings__section">
@@ -134,8 +162,8 @@ const Settings: React.FC = () => {
                             id="monthStart"
                             className="settings__select"
                             value={monthStartDate}
-                            onChange={(e) => setMonthStartDate(parseInt(e.target.value))}
-                            disabled
+                            onChange={(e) => handleUpdateMonthStartDate(parseInt(e.target.value))}
+                            disabled={saving}
                         >
                             {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
                                 <option key={day} value={day}>
@@ -143,16 +171,13 @@ const Settings: React.FC = () => {
                                 </option>
                             ))}
                         </select>
-                        <p className="settings__note">
-                            ⓘ Month start date customization coming soon
-                        </p>
                     </div>
                 </div>
 
                 {/* Danger Zone */}
                 <div className="settings__section settings__section--danger">
                     <h2 className="settings__section-title settings__section-title--danger">
-                        ⚠️ Danger Zone
+                         Danger Zone
                     </h2>
 
                     <div className="settings__card settings__card--danger">

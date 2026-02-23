@@ -54,11 +54,15 @@ const LogExpense: React.FC = () => {
 
         try {
             setLoading(true);
-            await addExpense(amountNum, selectedCategory, currentWeekIndex);
-
-            // Check if we should show warning after adding expense
+            await addExpense(amountNum, selectedCategory, currentWeekIndex, note);
             const overview = await getBudgetOverview();
-            if (overview.suggestFreeze) {
+            const currentWeek = overview.budget.weeks[currentWeekIndex];
+            const weekAlmostEmpty =
+                currentWeek &&
+                currentWeek.allocated > 0 &&
+                currentWeek.balance <= currentWeek.allocated * 0.10;
+
+            if (weekAlmostEmpty) {
                 setShowWarning(true);
             } else {
                 navigate('/dashboard');
@@ -72,7 +76,8 @@ const LogExpense: React.FC = () => {
 
     const handleWarningClose = () => {
         setShowWarning(false);
-        navigate('/dashboard');
+        // Pass warningShown flag so Dashboard skips auto-showing it again
+        navigate('/dashboard', { state: { warningShown: true } });
     };
 
     return (

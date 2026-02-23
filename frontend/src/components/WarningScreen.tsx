@@ -16,14 +16,14 @@ const WarningScreen: React.FC<WarningScreenProps> = ({ isOpen, onClose }) => {
     // State from backend
     const [dailyRemaining, setDailyRemaining] = useState(0);
     const [daysLeft, setDaysLeft] = useState(0);
-    const [budgetRemaining, setBudgetRemaining] = useState(0);
-    const [totalBudget, setTotalBudget] = useState(0);
     const [dailyAvg, setDailyAvg] = useState(0);
     const [suggestFreeze, setSuggestFreeze] = useState(false);
 
     useEffect(() => {
-        fetchWarningData();
-    }, []);
+        if (isOpen) {
+            fetchWarningData();
+        }
+    }, [isOpen]);
 
     const fetchWarningData = async () => {
         try {
@@ -32,13 +32,13 @@ const WarningScreen: React.FC<WarningScreenProps> = ({ isOpen, onClose }) => {
 
             setDailyRemaining(Math.round(data.burnRate.safeDailySpend));
             setDaysLeft(data.burnRate.daysRemaining);
-            setBudgetRemaining(data.burnRate.remainingMoney);
-            setTotalBudget(data.budget.allowance);
             setDailyAvg(data.prediction?.dailyAvg || 0);
             setSuggestFreeze(data.suggestFreeze);
 
-            // Calculate progress percentage
-            const percentage = (data.burnRate.remainingMoney / data.budget.allowance) * 100;
+            // Calculate progress percentage directly
+            const percentage = data.budget.allowance > 0
+                ? (data.burnRate.remainingMoney / data.budget.allowance) * 100
+                : 0;
             setProgressWidth(Math.max(0, Math.min(100, percentage)));
 
             setError(null);
@@ -157,7 +157,7 @@ const WarningScreen: React.FC<WarningScreenProps> = ({ isOpen, onClose }) => {
                             className="warning-btn warning-btn-primary"
                             onClick={handleFreeze}
                         >
-                            🔒 Freeze Spending for 24h
+                             Freeze Spending for 24h
                         </button>
                         <button
                             className="warning-btn warning-btn-secondary"

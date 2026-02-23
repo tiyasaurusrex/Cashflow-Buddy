@@ -26,6 +26,28 @@
     padding: 40px;
 }
 
+.settings__feedback {
+    padding: 0.75rem 1rem;
+    border: 2px solid #000;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-bottom: 1.25rem;
+    box-shadow: 3px 3px 0 #000;
+}
+
+.settings__feedback--success {
+    background: #d1fae5;
+    border-color: #059669;
+    color: #065f46;
+}
+
+.settings__feedback--error {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
 /* Section */
 .settings__section {
     margin-bottom: 48px;

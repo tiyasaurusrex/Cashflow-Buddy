@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import { 
     getBudgetOverview, 
@@ -19,6 +19,7 @@ interface EnvelopeData {
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [envelopes, setEnvelopes] = useState<EnvelopeData[]>([]);
@@ -26,7 +27,7 @@ const Dashboard: React.FC = () => {
     const [balanceLeft, setBalanceLeft] = useState(0);
     const [daysLeft, setDaysLeft] = useState(1);
     const [dailySafeSpend, setDailySafeSpend] = useState(0);
-    const [suggestFreeze, setSuggestFreeze] = useState(false);
+    const [showHeavySpendingBanner, setShowHeavySpendingBanner] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
 
     useEffect(() => {
@@ -38,9 +39,8 @@ const Dashboard: React.FC = () => {
             setLoading(true);
             const data: OverviewResponse = await getBudgetOverview();
             
-            // Map API data to envelope format
             const weekData: EnvelopeData[] = data.budget.weeks.map((week) => ({
-                week: week.week + 1, // API uses 0-indexed weeks
+                week: week.week + 1, 
                 allocated: week.allocated,
                 spent: week.spent,
                 remaining: week.balance,
@@ -54,19 +54,14 @@ const Dashboard: React.FC = () => {
             setBalanceLeft(data.budget.weeks[weekIndex]?.balance || 0);
             setDaysLeft(data.burnRate.daysRemaining);
             setDailySafeSpend(Math.round(data.burnRate.safeDailySpend));
-            setSuggestFreeze(data.suggestFreeze);
-            
-            // Show warning automatically when:
-            // 1. Backend suggests a freeze (heavy spending detected - 2 expenses in same day)
-            // 2. Low balance (below 30%)
-            // 3. Any week has danger status (overspent)
-            // 4. Current week spending > 50% of allocated
-            const hasLowBalance = (data.burnRate.remainingMoney / data.budget.allowance) < 0.3;
-            const hasDangerWeek = weekData.some(w => w.status === 'danger');
+
             const currentWeekData = data.budget.weeks[weekIndex];
-            const heavySpending = currentWeekData && currentWeekData.spent > (currentWeekData.allocated * 0.5);
-            
-            if (data.suggestFreeze || hasLowBalance || hasDangerWeek || heavySpending) {
+            const weekPct = currentWeekData && currentWeekData.allocated > 0
+                ? currentWeekData.balance / currentWeekData.allocated
+                : 1;
+            setShowHeavySpendingBanner(weekPct <= 0.30);
+            const warningAlreadyShown = location.state?.warningShown === true;
+            if (weekPct <= 0.10 && !warningAlreadyShown) {
                 setShowWarning(true);
             }
             
@@ -81,11 +76,11 @@ const Dashboard: React.FC = () => {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'safe':
-                return '#4ade80'; // Green
+                return '#4ade80'; 
             case 'warning':
-                return '#fbbf24'; // Yellow
+                return '#fbbf24'; 
             case 'danger':
-                return '#f87171'; // Red
+                return '#f87171'; 
             default:
                 return '#88aaee';
         }
@@ -139,27 +134,23 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Freeze Suggestion - Click to show warning */}
-                {suggestFreeze && (
+                {/* Heavy spending banner — balance ≤ 30% of this week's allocation */}
+                {showHeavySpendingBanner && (
                     <div 
                         className="dashboard__nudge" 
                         style={{ backgroundColor: '#fee2e2', borderColor: '#f87171', cursor: 'pointer' }}
                         onClick={() => setShowWarning(true)}
                     >
-                        <span className="dashboard__nudge-emoji">🥶</span>
+                        <span className="dashboard__nudge-emoji"></span>
                         <span className="dashboard__nudge-text">
                             Heavy spending detected! Tap to see details.
                         </span>
                     </div>
                 )}
 
-                {/* Micro Nudge - Click to view warning details */}
-                <div 
-                    className="dashboard__nudge"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => setShowWarning(true)}
-                >
-                    <span className="dashboard__nudge-emoji">👍</span>
+                {/* Micro Nudge — informational only, not clickable */}
+                <div className="dashboard__nudge">
+                    <span className="dashboard__nudge-emoji"></span>
                     <span className="dashboard__nudge-text">
                         You're doing okay. ₹{dailySafeSpend}/day left
                     </span>

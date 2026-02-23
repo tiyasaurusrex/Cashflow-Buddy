@@ -12,28 +12,9 @@
     margin: 0 auto;
     padding: 1rem 2rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     gap: 2rem;
-}
-
-.neo-nav__logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #000;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 0.5rem 1rem;
-    background-color: #88aaee;
-    border: 2px solid #000;
-    border-radius: 5px;
-    box-shadow: 3px 3px 0px 0px #000;
-    transition: all 0.2s ease;
-}
-
-.neo-nav__logo:hover {
-    transform: translate(3px, 3px);
-    box-shadow: none;
 }
 
 .neo-nav__menu {
@@ -79,6 +60,18 @@
 
 .neo-nav__link--active:hover {
     background-color: #88aaee;
+}
+
+.neo-nav__link--cta {
+    background-color: #FF006E;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 3px 3px 0px 0px #000;
+}
+
+.neo-nav__link--cta:hover {
+    background-color: #d4005c;
+    color: #fff;
 }
 
 /* Responsive design */

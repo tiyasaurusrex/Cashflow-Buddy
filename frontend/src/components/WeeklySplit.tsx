@@ -16,20 +16,20 @@ const WeeklySplit: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Get allowance from location state or use default
     const [monthlyAllowance, setMonthlyAllowance] = useState(
         location.state?.allowance ? parseFloat(location.state.allowance) : 4000
     );
-
-    // Generate dynamic date ranges based on current month
     const generateWeekDateRanges = (existingWeeks?: { allocated: number }[]) => {
         const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth(); // 0-indexed
+        const lastDay = new Date(year, month + 1, 0).getDate(); // actual last day of current month
         const monthName = now.toLocaleDateString('en-US', { month: 'short' });
         return [
             { week: 1, dateRange: `1-7 ${monthName}`, amount: existingWeeks?.[0]?.allocated?.toString() || '' },
             { week: 2, dateRange: `8-14 ${monthName}`, amount: existingWeeks?.[1]?.allocated?.toString() || '' },
             { week: 3, dateRange: `15-21 ${monthName}`, amount: existingWeeks?.[2]?.allocated?.toString() || '' },
-            { week: 4, dateRange: `22-31 ${monthName}`, amount: existingWeeks?.[3]?.allocated?.toString() || '' },
+            { week: 4, dateRange: `22-${lastDay} ${monthName}`, amount: existingWeeks?.[3]?.allocated?.toString() || '' },
         ];
     };
 
@@ -38,7 +38,6 @@ const WeeklySplit: React.FC = () => {
     const [totalAssigned, setTotalAssigned] = useState(0);
     const [remaining, setRemaining] = useState(monthlyAllowance);
 
-    // Fetch existing budget data on mount
     useEffect(() => {
         const fetchExistingBudget = async () => {
             try {
@@ -48,18 +47,13 @@ const WeeklySplit: React.FC = () => {
                     setWeeks(generateWeekDateRanges(data.budget.weeks));
                 }
             } catch (err) {
-                // No existing budget, use defaults
                 console.log('No existing budget found, using defaults');
             }
         };
-        
-        // Only fetch if no allowance was passed via navigation
         if (!location.state?.allowance) {
             fetchExistingBudget();
         }
     }, [location.state?.allowance]);
-
-    // Calculate totals whenever weeks change
     useEffect(() => {
         const total = weeks.reduce((sum, week) => {
             const amount = parseFloat(week.amount) || 0;
@@ -202,10 +196,10 @@ const WeeklySplit: React.FC = () => {
                 {/* Smart Assist Buttons */}
                 <div className="weekly-split__assist-buttons">
                     <button className="weekly-split__assist-btn" onClick={handleAutoSplit}>
-                        🔹 Auto Split Evenly
+                         Auto Split Evenly
                     </button>
                     <button className="weekly-split__assist-btn" onClick={handleReset}>
-                        🔹 Reset Splits
+                         Reset Splits
                     </button>
                 </div>
 
@@ -246,7 +240,7 @@ const WeeklySplit: React.FC = () => {
                         onClick={handleSave}
                         disabled={!canSave || loading}
                     >
-                        {loading ? 'Saving...' : '🟦 SAVE WEEKLY SPLIT'}
+                        {loading ? 'Saving...' : ' SAVE WEEKLY SPLIT'}
                     </NeoButton>
                 </div>
             </div>

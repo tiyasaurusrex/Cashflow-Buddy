@@ -7,7 +7,8 @@ function calculateBurnRate(budget) {
     0
   ).getDate();
 
-  const daysRemaining = daysInMonth - today.getDate();
+  // Include today in the remaining days (today still has budget to spend)
+  const daysRemaining = daysInMonth - today.getDate() + 1;
 
   const remainingMoney = budget.weeks.reduce(
     (sum, week) => sum + week.balance,

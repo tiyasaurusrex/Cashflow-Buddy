@@ -1,10 +1,12 @@
 function shouldSuggestFreeze(expenses) {
-  if (!expenses || expenses.length < 2) return false;
+  if (!expenses || expenses.length < 3) return false;
 
-  const lastTwo = expenses.slice(-2);
+  // Only warn if 3 or more expenses were logged today
+  // (2 in a day is normal; 3+ in a day signals heavy spending)
+  const lastThree = expenses.slice(-3);
   const today = new Date().toDateString();
 
-  return lastTwo.every(
+  return lastThree.every(
     e => new Date(e.date).toDateString() === today
   );
 }

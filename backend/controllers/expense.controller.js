@@ -1,17 +1,19 @@
 const expenseService = require("../services/expense.service");
 
-exports.add = (req, res) => {
+exports.add = async (req, res) => {
   try {
-    const { amount, category, weekIndex } = req.body;
+    const { amount, category, weekIndex, note } = req.body;
 
     if (!amount || !category || weekIndex === undefined) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const result = expenseService.addExpense(
+    const result = await expenseService.addExpense(
+      req.userId,
       Number(amount),
       category,
-      weekIndex
+      weekIndex,
+      note || ''
     );
 
     res.json(result);
