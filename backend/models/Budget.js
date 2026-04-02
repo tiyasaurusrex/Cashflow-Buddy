@@ -11,7 +11,7 @@ const expenseSchema = new mongoose.Schema({
     amount: Number,
     category: String,
     weekIndex: Number,
-    date: String,
+    date: { type: Date, default: Date.now },
     note: { type: String, default: '' }
 }, { _id: false });
 

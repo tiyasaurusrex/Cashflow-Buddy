@@ -5,9 +5,9 @@ async function saveBudget(userId, data) {
   const budget = await Budget.findOneAndUpdate(
     { userId },
     { $set: { ...saveData, userId } },
-    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+    { upsert: true, new: true, setDefaultsOnInsert: true }
   );
-  return budget.toObject();
+  return budget ? budget.toObject() : null;
 }
 
 // Atomically push a new expense and update week/category data in one operation
@@ -22,7 +22,7 @@ async function addExpenseToBudget(userId, updatedWeeks, updatedCategoryTotals, i
       },
       $push: { expenses: expenseEntry },
     },
-    { returnDocument: 'after' }
+    { new: true }
   );
   return budget ? budget.toObject() : null;
 }
