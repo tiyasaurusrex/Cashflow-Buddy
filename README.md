@@ -78,7 +78,6 @@ Create a `.env` file in the `backend/` directory:
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 GOOGLE_CLIENT_ID=your_google_oauth_client_id
-CORS_ORIGINS=optional_comma_separated_production_origins
 ```
 
 Start the server:
@@ -102,6 +101,7 @@ Create a `.env` file in the `frontend/` directory:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
 ```
 
 Start the development server:
@@ -111,7 +111,7 @@ npm run dev
 ```
 
 The frontend will run on `http://localhost:5173` (Vite's default port).
- During development, CORS automatically allows any localhost or 127.0.0.1 origin on any port.
+
 ### 4. Open in Browser
 
 Navigate to `http://localhost:5173` to start using CashFlow Buddy.
@@ -193,14 +193,6 @@ All budget and expense routes require a valid JWT in the `Authorization: Bearer 
 | Command     | Description      |
 |-------------|------------------|
 | `npm start` | Start the server |
-
-## Verification
-
-Frontend routes verified working: `/login`, `/`, `/dashboard`, `/log-expense`, `/weekly-split`, `/monthly-overview`, `/settings`.
-
-Backend endpoints verified: Google OAuth authentication, budget management (init, overview, update, reset), and expense tracking all responding with expected status codes.
-
-Build status: TypeScript compilation, Vite bundling, and ESLint checks all passing.
 
 ## Roadmap / Future Enhancements
 
