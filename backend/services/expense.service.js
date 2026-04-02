@@ -23,7 +23,7 @@ async function addExpense(userId, amount, category, weekIndex, note = '') {
     amount,
     category,
     weekIndex,
-    date: new Date().toISOString(),
+    date: new Date(),
     note,
   };
 

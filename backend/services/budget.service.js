@@ -61,6 +61,7 @@ function applyExpenseToWeeklyBudget(budget, amount, weekIndex) {
     const used = Math.min(nextWeek.balance, remaining);
     nextWeek.balance -= used;
     nextWeek.allocated -= used; // important: reduce future allowance
+    nextWeek.spent += used;     // BUG FIX: track how much was pulled forward
     remaining -= used;
   }
 
