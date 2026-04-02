@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import { 
@@ -30,11 +30,7 @@ const Dashboard: React.FC = () => {
     const [showHeavySpendingBanner, setShowHeavySpendingBanner] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, []);
-
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = useCallback(async () => {
         try {
             setLoading(true);
             const data: OverviewResponse = await getBudgetOverview();
@@ -71,7 +67,11 @@ const Dashboard: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [location.state?.warningShown]);
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, [fetchDashboardData]);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -88,6 +88,12 @@ const Dashboard: React.FC = () => {
 
     const handleLogExpense = () => {
         navigate('/log-expense');
+    };
+
+    const getProgressWidth = (remaining: number, allocated: number) => {
+        if (allocated <= 0) return 0;
+        const raw = (remaining / allocated) * 100;
+        return Math.max(0, Math.min(100, raw));
     };
 
     if (loading) {
@@ -179,7 +185,7 @@ const Dashboard: React.FC = () => {
                                     <div
                                         className="dashboard__envelope-progress-bar"
                                         style={{
-                                            width: `${(envelope.remaining / envelope.allocated) * 100}%`,
+                                            width: `${getProgressWidth(envelope.remaining, envelope.allocated)}%`,
                                             backgroundColor: getStatusColor(envelope.status),
                                         }}
                                     />

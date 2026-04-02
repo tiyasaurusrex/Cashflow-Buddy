@@ -46,7 +46,7 @@ const WeeklySplit: React.FC = () => {
                     setMonthlyAllowance(data.budget.allowance);
                     setWeeks(generateWeekDateRanges(data.budget.weeks));
                 }
-            } catch (err) {
+            } catch {
                 console.log('No existing budget found, using defaults');
             }
         };

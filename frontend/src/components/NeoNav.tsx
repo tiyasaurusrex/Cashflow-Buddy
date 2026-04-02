@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 import './NeoNav.css';
 
 interface NavItem {
@@ -12,11 +13,10 @@ interface NeoNavProps {
 }
 
 const NeoNav: React.FC<NeoNavProps> = ({ items, onItemClick }) => {
-    const [activeItem, setActiveItem] = useState<string | null>(null);
+    const location = useLocation();
 
     const handleItemClick = (item: NavItem, e: React.MouseEvent) => {
         e.preventDefault();
-        setActiveItem(item.label);
         if (onItemClick) {
             onItemClick(item);
         }
@@ -26,23 +26,29 @@ const NeoNav: React.FC<NeoNavProps> = ({ items, onItemClick }) => {
         <nav className="neo-nav">
             <div className="neo-nav__container">
                 <ul className="neo-nav__menu">
-                    {items.map((item) => (
-                        <li key={item.label} className="neo-nav__item">
-                            <a
-                                href={item.href}
-                                className={`neo-nav__link ${
-                                    item.label === 'Log Expense'
-                                        ? 'neo-nav__link--cta'
-                                        : activeItem === item.label
-                                        ? 'neo-nav__link--active'
-                                        : ''
-                                }`}
-                                onClick={(e) => handleItemClick(item, e)}
-                            >
-                                {item.label}
-                            </a>
-                        </li>
-                    ))}
+                    {items.map((item) => {
+                        const isCta = item.label === 'Log Expense';
+                        const isActiveRoute = item.href !== '#logout' && location.pathname === item.href;
+                        const className = `neo-nav__link ${
+                            isCta
+                                ? 'neo-nav__link--cta'
+                                : isActiveRoute
+                                ? 'neo-nav__link--active'
+                                : ''
+                        }`;
+
+                        return (
+                            <li key={item.label} className="neo-nav__item">
+                                <a
+                                    href={item.href}
+                                    className={className}
+                                    onClick={(e) => handleItemClick(item, e)}
+                                >
+                                    {item.label}
+                                </a>
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
         </nav>
