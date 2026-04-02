@@ -23,7 +23,7 @@ exports.googleLogin = async (req, res) => {
         let user = await User.findOneAndUpdate(
             { email },
             { $set: { name, googleId, picture } },
-            { returnDocument: 'after' }
+            { new: true }
         );
         if (!user) {
             user = await User.create({
