@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import { 
     getBudgetOverview, 
-    getCurrentWeekIndex, 
     getSpendingStatus 
 } from '../apis';
 import type { OverviewResponse } from '../apis';
@@ -45,7 +44,7 @@ const Dashboard: React.FC = () => {
             
             setEnvelopes(weekData);
             
-            const weekIndex = getCurrentWeekIndex();
+            const weekIndex = data.currentWeekIndex;
             setCurrentWeek(weekIndex + 1);
             setBalanceLeft(data.budget.weeks[weekIndex]?.balance || 0);
             setDaysLeft(data.burnRate.daysRemaining);

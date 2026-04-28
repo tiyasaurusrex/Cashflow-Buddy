@@ -6,6 +6,14 @@ const { calculateBurnRate } = require("../services/burnRate.service");
 const { predictRunOutDate } = require("../services/prediction.service");
 const { shouldSuggestFreeze } = require("../services/freeze.service");
 
+function getCurrentWeekIndexForBudget(budget) {
+  const today = new Date();
+  const monthStart = budget.monthStartDate || 1;
+  const startDate = new Date(today.getFullYear(), today.getMonth(), monthStart).getTime();
+
+  return Math.max(0, Math.min(getCurrentWeek(startDate, 4) - 1, 3));
+}
+
 
 // -------- INIT BUDGET --------
 exports.init = async (req, res) => {
@@ -20,6 +28,7 @@ exports.init = async (req, res) => {
       data.expenses = existing.expenses;
       data.categoryTotals = existing.categoryTotals;
       data.isOverdrawn = existing.isOverdrawn;
+      data.monthStartDate = existing.monthStartDate || data.monthStartDate;
     }
 
     await budgetRepository.saveBudget(req.userId, data);
@@ -44,7 +53,8 @@ exports.overview = async (req, res) => {
     budget,
     burnRate: calculateBurnRate(budget),
     prediction: predictRunOutDate(budget),
-    suggestFreeze: shouldSuggestFreeze(budget.expenses)
+    suggestFreeze: shouldSuggestFreeze(budget.expenses),
+    currentWeekIndex: getCurrentWeekIndexForBudget(budget)
   });
 };
 
@@ -92,11 +102,7 @@ exports.updateAllowance = async (req, res) => {
       return res.status(404).json({ error: "No budget found" });
     }
 
-    // Derive the actual current week index from today's date and month start
-    const today = new Date();
-    const monthStart = budget.monthStartDate || 1;
-    const startDate = new Date(today.getFullYear(), today.getMonth(), monthStart).getTime();
-    const currentWeekIndex = Math.min(getCurrentWeek(startDate, 4) - 1, 3); // 1-indexed → 0-indexed, cap at 3
+    const currentWeekIndex = getCurrentWeekIndexForBudget(budget);
 
     const updatedBudget = budgetService.resetAllowance(
       budget,

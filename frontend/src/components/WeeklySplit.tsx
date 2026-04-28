@@ -19,17 +19,27 @@ const WeeklySplit: React.FC = () => {
     const [monthlyAllowance, setMonthlyAllowance] = useState(
         location.state?.allowance ? parseFloat(location.state.allowance) : 4000
     );
-    const generateWeekDateRanges = (existingWeeks?: { allocated: number }[]) => {
+    const [monthStartDate, setMonthStartDate] = useState(1);
+
+    const generateWeekDateRanges = (existingWeeks?: { allocated: number }[], startDay = 1) => {
         const now = new Date();
         const year = now.getFullYear();
         const month = now.getMonth(); // 0-indexed
         const lastDay = new Date(year, month + 1, 0).getDate(); // actual last day of current month
         const monthName = now.toLocaleDateString('en-US', { month: 'short' });
+
+        const getRange = (weekIndex: number) => {
+            const from = startDay + (weekIndex * 7);
+            const to = Math.min(from + 6, lastDay);
+            const safeFrom = Math.min(Math.max(from, 1), lastDay);
+            return `${safeFrom}-${to} ${monthName}`;
+        };
+
         return [
-            { week: 1, dateRange: `1-7 ${monthName}`, amount: existingWeeks?.[0]?.allocated?.toString() || '' },
-            { week: 2, dateRange: `8-14 ${monthName}`, amount: existingWeeks?.[1]?.allocated?.toString() || '' },
-            { week: 3, dateRange: `15-21 ${monthName}`, amount: existingWeeks?.[2]?.allocated?.toString() || '' },
-            { week: 4, dateRange: `22-${lastDay} ${monthName}`, amount: existingWeeks?.[3]?.allocated?.toString() || '' },
+            { week: 1, dateRange: getRange(0), amount: existingWeeks?.[0]?.allocated?.toString() || '' },
+            { week: 2, dateRange: getRange(1), amount: existingWeeks?.[1]?.allocated?.toString() || '' },
+            { week: 3, dateRange: getRange(2), amount: existingWeeks?.[2]?.allocated?.toString() || '' },
+            { week: 4, dateRange: getRange(3), amount: existingWeeks?.[3]?.allocated?.toString() || '' },
         ];
     };
 
@@ -44,10 +54,12 @@ const WeeklySplit: React.FC = () => {
                 const data = await getBudgetOverview();
                 if (data.budget) {
                     setMonthlyAllowance(data.budget.allowance);
-                    setWeeks(generateWeekDateRanges(data.budget.weeks));
+                    const startDay = data.budget.monthStartDate || 1;
+                    setMonthStartDate(startDay);
+                    setWeeks(generateWeekDateRanges(data.budget.weeks, startDay));
                 }
             } catch {
-                console.log('No existing budget found, using defaults');
+                // No existing budget or temporary fetch issue: keep defaults.
             }
         };
         if (!location.state?.allowance) {
@@ -95,7 +107,7 @@ const WeeklySplit: React.FC = () => {
     };
 
     const handleReset = () => {
-        setWeeks(generateWeekDateRanges(undefined));
+        setWeeks(generateWeekDateRanges(undefined, monthStartDate));
         setError(null);
     };
 
@@ -109,12 +121,9 @@ const WeeklySplit: React.FC = () => {
             setLoading(true);
             setError(null);
             const weeklyAllocations = weeks.map(week => parseFloat(week.amount) || 0);
-            console.log('Saving budget:', { monthlyAllowance, weeklyAllocations });
-            const result = await initBudget(monthlyAllowance, weeklyAllocations);
-            console.log('Budget saved successfully:', result);
+            await initBudget(monthlyAllowance, weeklyAllocations);
             navigate('/dashboard');
         } catch (err) {
-            console.error('Error saving budget:', err);
             setError(err instanceof Error ? err.message : 'Failed to save budget');
         } finally {
             setLoading(false);
