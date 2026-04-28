@@ -11,6 +11,9 @@ const app = express();
 
 connectDB();
 
+// Needed for correct client IP handling behind reverse proxies in hosted environments.
+app.set("trust proxy", 1);
+
 const configuredOrigins = (process.env.CORS_ORIGINS || "")
   .split(",")
   .map((origin) => origin.trim())
@@ -43,11 +46,17 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/auth", authRoutes);
 app.use("/budget", budgetRoutes);
 app.use("/expense", expenseRoutes);
 
-app.listen(8080, () => {
-  console.log("Server running on port 8080");
+const port = process.env.PORT || 8080;
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
 
