@@ -78,6 +78,8 @@ Create a `.env` file in the `backend/` directory:
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 GOOGLE_CLIENT_ID=your_google_oauth_client_id
+CORS_ORIGINS=optional_comma_separated_production_origins
+PORT=8080
 ```
 
 Start the server:
@@ -86,7 +88,7 @@ Start the server:
 npm start
 ```
 
-The backend server will run on `http://localhost:8080`.
+The backend server runs on `http://localhost:8080` by default, or on `PORT` when provided by your host.
 
 ### 3. Set Up the Frontend
 
@@ -97,7 +99,7 @@ cd frontend
 npm install
 ```
 
-Create a `.env` file in the `frontend/` directory:
+Create a `.env` file in the repository root (Vite reads from `envDir: '..'`):
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080
@@ -111,6 +113,8 @@ npm run dev
 ```
 
 The frontend will run on `http://localhost:5173` (Vite's default port).
+
+Backend health check endpoint: `GET /health`
 
 ### 4. Open in Browser
 
@@ -204,14 +208,4 @@ All budget and expense routes require a valid JWT in the `Authorization: Bearer 
 - [ ] Multiple currency support
 - [ ] Recurring expense tracking
 
-## Contributing
 
-Contributions are welcome. Please submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -m 'Add your feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a Pull Request
-
----
