@@ -47,6 +47,8 @@ app.use(cors({
       return callback(null, true);
     }
 
+    // Log blocked origins for easier debugging in Render logs
+    console.warn('CORS blocked origin:', origin, 'allowed:', configuredOrigins);
     return callback(new Error("Not allowed by CORS"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
